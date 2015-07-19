@@ -7,7 +7,6 @@
 #include "ByteBuffer.h"
 #include "SoftwareTimer.h"
 #include "PlugController.h"
-#include "AM2302.h"
 #include "serverHelpers.h"
 #include "I2C.h"
 
@@ -24,7 +23,6 @@ void main(void){
     serverSetup();
     swTimerSetup();
     plugControllerSetup();
-    setupAM2303();
     setupI2CMaster();
 
     numberOfRestarts = eeprom_read(EEPROM_Resets) + 1;

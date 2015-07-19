@@ -39,11 +39,6 @@ extern "C" {
 #define EUSART1_Tx_Int_Priority             IPR1bits.TX1IP
 #define EUSART1_Rx_Int_Priority             IPR1bits.RC1IP
 
-
-#define AM2302_InNOut TRISAbits.RA7
-#define AM2302_Read PORTAbits.RA7
-#define AM2302_Lat LATAbits.LA7
-
 #define Plug_Port PORTB
 #define Plug_Ansel ANSELB
 #define Plug_Wpu WPUB

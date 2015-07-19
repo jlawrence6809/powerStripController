@@ -6,7 +6,6 @@
 #include "shared.h"
 #include "serverHelpers.h"
 #include "ByteBuffer.h"
-#include "AM2302.h"
 #include "SoftwareTimer.h"
 #include "PlugController.h"
 #include "I2C.h"
@@ -24,7 +23,6 @@ void reportErrors(char*);
 void resetCommand(char*);
 void printSystemCounter(char*);
 void printNumberOfRestarts(char*);
-void reportAM2302(char*);
 void softwareTimerTest(char*);
 void runDs3231RTC(char *);
 
@@ -82,9 +80,9 @@ void softwareTimerTest(char* args){
 }
 
 void findAndRun(char* cmd){
-    u8 cmdLen = 10;
-    char * cmds[] =  {"setplug",         "printplug", "envmeas",     "reset",       "syscnt",            "numrst",               "errs",        "swt",              "plugivl", "rtc"};
-    void * cmdsF[] = {&setPlugServer,   &printPlugs, &reportAM2302, &resetCommand, &printSystemCounter, &printNumberOfRestarts, &reportErrors, &softwareTimerTest, &plugTimer, &runDs3231RTC};
+    u8 cmdLen = 9;
+    char * cmds[] =  {"setplug",         "printplug",     "reset",       "syscnt",            "numrst",               "errs",        "swt",              "plugivl", "rtc"};
+    void * cmdsF[] = {&setPlugServer,   &printPlugs, &resetCommand, &printSystemCounter, &printNumberOfRestarts, &reportErrors, &softwareTimerTest, &plugTimer, &runDs3231RTC};
 
     bool passed;
     for(u8 i = 0; i < cmdLen; i++){
@@ -148,22 +146,6 @@ void printSystemCounter(char* args){
 
 void printNumberOfRestarts(char* args){
     printf("#Rst:0x%X\n", numberOfRestarts);
-}
-
-void reportAM2302(char* args){
-    printf("m:{RH: ");
-    AM2302 data;
-    runAM2302(&data);
-
-     printf("%f%%, Tc: %f, Tf: %f}\n", data.RH, data.Tc, data.Tf);
-
-     if(data.BB){
-         printf("BB:%d\n", data.BB);
-     }
-
-     if(data.chkA != data.chkE){
-         printf("CHK FAIL! E: %d, G: %d\n", data.chkE, data.chkA);
-     }
 }
 
 void runDs3231RTC(char * args){
