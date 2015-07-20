@@ -32,6 +32,5 @@ void interrupt low_priority isrl(void) {
     if(SwTimer_Interrupt_Flag){ //timer 2
         swTimerCycle();
         SwTimer_Interrupt_Flag = 0;
-        SwTimer_Interrupt_Count = 0;
     }
 }
