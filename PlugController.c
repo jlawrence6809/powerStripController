@@ -25,44 +25,6 @@ void plugControllerSetup(){
     Plug_Lat = eeprom_read(EEPROM_Plug);
 }
 
-u8 plugTimerId = 0xFF;
-u8 timerPlug;
-uint32_t timerSec;
-void plugTimer2(u8, uint32_t);
-
-void plugTimer(char* args){
-    ParsedU8 p;
-    nextHexU8(args, &p);
-    args = p.newArgs;
-    if(!p.passed){
-        printf("bad input\n");
-        return;
-    }
-
-    ParsedU32 t;
-    nextHexU32(args, &t);
-    args = t.newArgs;
-    if(!t.passed){
-        printf("bad input\n");
-        return;
-    }
-    timerPlug = p.result;
-    timerSec = t.result;
-    if(timerSec < 5){
-        timerSec = 5;
-    }
-    swTimerUnregister(plugTimerId);
-    plugTimerId = swTimerRegister(timerSec, &plugTimerTO);
-    printf("%x plug %x interval\n", timerPlug, timerSec);
-}
-
-void plugTimerTO(u8 tmrId){
-    printf("plugTO\n#");
-    setPlug(timerPlug, PlugToggle);
-//    swTimerUnregister(plugTimerId);
-    plugTimerId = swTimerRegister(timerSec, &plugTimerTO);
-}
-
 void setPlugServer(char* args){
     ParsedU8 v8;
     nextHexU8(args, &v8);

@@ -45,8 +45,12 @@ extern "C" {
 #define Plug_Lat LATB
 #define Plug_Tris TRISB
 
-#define EEPROM_Resets 9
-#define EEPROM_Plug 7
+#define EEPROM_Resets 0
+#define EEPROM_Plug 1
+#define EEPROM_SWT_START 2 //lights
+#define EEPROM_SWT_STOP 9
+#define EEPROM_SWT_MASK_START 10
+#define EEPROM_SWT_MASK_STOP 13
 
 
 #define SwTimer_Enable PIE1bits.TMR2IE

@@ -6,5 +6,7 @@
  u8 swTimerRegister(uint32_t, void*);
  void swTimerUnregister(u8);
 
+ void swTimerTrain(char *);
+
 #endif	/* SOFTWARETIMER_H */
 

@@ -9,6 +9,7 @@
 #include "PlugController.h"
 #include "serverHelpers.h"
 #include "I2C.h"
+#include "PlugCron.h"
 
 void configureOscillator(void);
 void initApp(void);
@@ -16,6 +17,7 @@ u8 runDs3231RTC(char *);
 
 uint32_t SystemCounter = 0;
 uint8_t numberOfRestarts = 0;
+u8 hasHadReset = 1;
 
 void main(void){
     configureOscillator();
@@ -24,6 +26,7 @@ void main(void){
     swTimerSetup();
     plugControllerSetup();
     setupI2CMaster();
+    setupPlugCron();
 
     numberOfRestarts = eeprom_read(EEPROM_Resets) + 1;
     eeprom_write(EEPROM_Resets, numberOfRestarts);

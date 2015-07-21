@@ -5,6 +5,8 @@
 extern "C" {
 #endif
     typedef uint8_t u8;
+    typedef uint16_t u16;
+    typedef uint32_t u32;
 
     #define SYS_FREQ        64000000L
     #define _XTAL_FREQ      SYS_FREQ
@@ -17,6 +19,7 @@ extern "C" {
     u8 numberOfRestarts;
 
     uint32_t SystemCounter;
+    u8 hasHadReset;
 
     char rxStr[ByteBufferSize]; //64
     u8 rxStrCnt;

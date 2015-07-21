@@ -103,7 +103,7 @@ u8 getI2CMaster(u8 adx){
     //the end of the ninth clock cycle by setting the
     //SSPxIF bit.
     i2cWait();
-    u8 fail = I2C_ACK;
+//    u8 fail = I2C_ACK;
     //8. User sets the RCEN bit of the SSPxCON2 register
     //and the Master clocks in a byte from the slave.
     I2C_RX = 1;

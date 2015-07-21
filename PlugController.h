@@ -20,7 +20,6 @@ void plugControllerSetup(void);
 void setPlugServer(char*);
 u8 setPlug(u8, u8);
 void printPlugs(char*);
-void plugTimer(char*);
 
 #ifdef	__cplusplus
 }
