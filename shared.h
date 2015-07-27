@@ -27,6 +27,7 @@ extern "C" {
     void serverRun(void);
     void serverSetup(void);
     void putch(char);
+    void printBinU8(u8);
 
 #ifdef  __cplusplus
 }

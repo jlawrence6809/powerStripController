@@ -23,6 +23,7 @@ u8 getControl1();
 u8 getCelcius();
 u8 readDs3231(u8);
 u8 writeDs3231(u8, u8);
+void printAll();
 
 void rwRTC_DS3231(char * args){
     //max 100khz i2c (400khz fast mode)
@@ -35,6 +36,10 @@ void rwRTC_DS3231(char * args){
     nextHexU8(args, &p);
     args = p.newArgs;
     if(!p.passed){
+        u8 c = p.result;
+        if(c == 't'){
+            printAll();
+        }
         //print time, tmp status
         return;
     }
@@ -81,6 +86,25 @@ u16 getDS3231MinOfDay(){
     u16 minTotal = (u16) minutes;
     minTotal += ((u16) hours)*60;
     return minTotal;
+}
+
+void printAll(){
+    u8 sec = getSec();
+    u8 min = getMin();
+    u8 hour = getHour();
+    u8 day = getDay();
+    u8 date = getDate();
+    u8 month = getMonth();
+    u8 year = getYear();
+    u8 ctrl0 = getControl0();
+    u8 ctrl1 = getControl1();
+    u8 cel = getCelcius();
+    printf("%d:%d:%d %d/%d/%d\n", hour, min, sec, month, date, year);
+    printf("ctrl0: ");
+    printBinU8(ctrl0);
+    printf("\nctrl1: ");
+    printBinU8(ctrl1);
+    printf("\ncel: %dc\n", cel);
 }
 
 u8 getSec(){

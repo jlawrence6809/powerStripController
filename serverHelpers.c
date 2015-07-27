@@ -65,6 +65,7 @@ void nextHexU8(char * args, ParsedU8* res){
         u8 cur = hexCharToNum(*args);
         if(cur == 0xFF){
             passed = 0;
+            val = *args;
             break;
         }
         val = val << 4;
@@ -78,10 +79,23 @@ void nextHexU8(char * args, ParsedU8* res){
 
 void printHexU32(uint32_t v){
    char numToCharArray[16] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+   putch('0');
+   putch('x');
    for(u8 i = 0; i < 8; i++){
         v = (v << 4) | (v >> 28);
         u8 tmpSC8 = ((u8) v) & 0x0F;
         putch(numToCharArray[tmpSC8]);
+    }
+}
+
+void printBinU8(u8 v){
+    putch('0');
+    putch('b');
+    for(u8 i = 0; i < 8; i++){
+        v = (v << 1) | (v >> 7);
+        u8 t = v & 1;
+        t += '0';
+        putch(t);
     }
 }
 
