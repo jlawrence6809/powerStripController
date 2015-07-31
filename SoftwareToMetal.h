@@ -51,6 +51,7 @@ extern "C" {
 #define EEPROM_SWT_STOP 9
 #define EEPROM_SWT_MASK_START 10
 #define EEPROM_SWT_MASK_STOP 13
+#define EEPROM_ALLOFF 14
 
 
 #define SwTimer_Enable PIE1bits.TMR2IE

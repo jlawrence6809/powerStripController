@@ -10,7 +10,7 @@
 #include "SoftwareTimer.h"
 #include "serverHelpers.h"
 
-#define Update_Invl_Sec 30
+#define Update_Invl_Sec 25
 #define cronLen 4
 
 void setupPlugCron(void);
@@ -18,6 +18,7 @@ void plugCron(char*);
 void runPlugCron(u8);
 void printPlugCron(void);
 u8 plugCron_OnlyErrors(char *);
+
 u8 allOff = 0;
 
 uint16_t times[cronLen];
@@ -53,12 +54,14 @@ void setupPlugCron(){
         }
     }
     swTimerRegister(Update_Invl_Sec, &runPlugCron);
+
+    allOff = eeprom_read(EEPROM_ALLOFF);
 }
 
 void plugCron(char * args){
     u8 error = plugCron_OnlyErrors(args);
     if(error){
-        printf("idx msk min, %d\n", error);
+        printf("i msk m, %d\n", error);
     }
     printPlugCron();
 }
@@ -70,7 +73,9 @@ u8 plugCron_OnlyErrors(char * args){
     nextHexU32(args, &p);
     if(!p.passed){
         if(((u8) p.result) == 'r'){
+            putch('r');
             allOff = 0;
+            eeprom_write(EEPROM_ALLOFF, 0);
         }
         return 1;
     }
@@ -110,20 +115,78 @@ u8 plugCron_OnlyErrors(char * args){
     return 0;
 }
 
+#define tempsLen 8
+u8 temps[tempsLen];
+u8 tempsIdx = 0;
+u8 heatIdx = 0;
+u8 heatStopIdx = 0;
+
+u8 waitCronBusy(){
+    u8 to = 255;
+    while(isDS3231Busy() && to){
+        to--;
+        __delay_ms(10);
+    }
+    if(!to){
+        printf("\ntimeout");
+        return 1;
+    }
+    return 0;
+}
+
+u8 getCelForCron(){
+//    if(waitCronBusy()){
+//        return 0;
+//    }
+//    setConv();
+    if(waitCronBusy()){
+        return 0;
+    }
+    u8 cel = getCelcius();
+    return cel;
+}
 
 void runPlugCron(u8 tmrId){
     u16 minOfDay = getDS3231MinOfDay();
-    u8 cel = getCelcius();
+    u8 cel = getCelForCron();
+//    if(cel > 50 || cel == 0){
+//        cel = getCelForCron();
+//    }
+    printf("\n0x%x m, %dc\n", minOfDay, cel);
 
-    if(cel > 50 ||  cel == 0)
-    {
-        allOff = 1;
+    if(cel > 50 ||  cel == 0){
+        if(!allOff){
+            heatIdx = tempsIdx;
+            heatStopIdx = ((tempsLen >> 2) + tempsIdx - 1)%tempsLen;
+            setPlug('a', PlugOff);
+            eeprom_write(EEPROM_ALLOFF, 1);
+        }
+        if(allOff < 255){
+            allOff++;
+        }
+    }else if(allOff == 1){
+        //if on the second measurement we don't fail then reset it
+        allOff = 0;
     }
-    if(allOff){
-        printf("heat!");
-        setPlug('a', PlugOff);
+
+    if(allOff >= 2){
+        printf("heat! 0x%x, idx:0x%x\n", allOff, heatIdx);
+        if(tempsIdx != heatStopIdx){
+            temps[tempsIdx] = cel;
+            tempsIdx++;
+            tempsIdx %= tempsLen;
+        }
+        //else{
+            for(u8 i = 0; i < tempsLen; i++){
+                printf("0x%x, ", temps[i]);
+            }
+            putch('\n');
+        //}
+
     }else{
-        printf("\nchk:0x%x\n", minOfDay);
+        temps[tempsIdx] = cel;
+        tempsIdx++;
+        tempsIdx %= tempsLen;
         if(minOfDay < lastMinOfDay){
             //day transition
             timeFlag = 0;

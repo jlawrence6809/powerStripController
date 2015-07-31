@@ -81,9 +81,9 @@ u8 setPlug(u8 plug, u8 val){
 }
 
 void printPlugs(char* args){
-    printf("plugVals: 0x%x\n", Plug_Port);
+    printf("pv: 0x%x\n", Plug_Port);
 }
 
 void printSetPlugUsage(){
-    printf("Exp Args: # #\n");
+    printf( "# #\n");
 }

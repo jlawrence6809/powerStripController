@@ -24,8 +24,11 @@ u8 getYear();
 u8 getControl0();
 u8 getControl1();
 u8 getCelcius();
-u8 readDs3231(u8);
-u8 writeDs3231(u8, u8);
+u8 isDS3231Busy();
+u8 getConv();
+void setConv();
+u8 readDS3231(u8);
+u8 writeDS3231(u8, u8);
 
 
 #ifdef	__cplusplus

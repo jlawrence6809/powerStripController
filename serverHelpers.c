@@ -39,6 +39,7 @@ void nextHexU32(char * args, ParsedU32* res){
         u8 cur = hexCharToNum(*args);
         if(cur == 0xFF){
             passed = 0;
+            val = (u32) *args;
             break;
         }
         val = val << 4;

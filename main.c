@@ -13,7 +13,7 @@
 
 void configureOscillator(void);
 void initApp(void);
-u8 runDs3231RTC(char *);
+u8 runDS3231RTC(char *);
 
 uint32_t SystemCounter = 0;
 uint8_t numberOfRestarts = 0;
