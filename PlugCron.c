@@ -14,10 +14,11 @@
 #define cronLen 4
 
 void setupPlugCron(void);
-void plugCron(char*);
-void runPlugCron(u8);
+void plugCronServer(char*);
+void tmrPlugCron(u8);
 void printPlugCron(void);
-u8 plugCron_OnlyErrors(char *);
+u8 plugCron(char *);
+u8 plugCronTempCheck(void);
 
 u8 allOff = 0;
 
@@ -53,20 +54,20 @@ void setupPlugCron(){
             timeFlag |= (1 << i);
         }
     }
-    swTimerRegister(Update_Invl_Sec, &runPlugCron);
+    swTimerRegister(Update_Invl_Sec, &tmrPlugCron);
 
     allOff = eeprom_read(EEPROM_ALLOFF);
 }
 
-void plugCron(char * args){
-    u8 error = plugCron_OnlyErrors(args);
+void plugCronServer(char * args){
+    u8 error = plugCron(args);
     if(error){
-        printf("i msk m, %d\n", error);
+        printf("err:%d\n", error);
     }
     printPlugCron();
 }
 
-u8 plugCron_OnlyErrors(char * args){
+u8 plugCron(char * args){
     //if has hour and duration then apply mask and reverse after duration
     //if has hour and no duration then apply mask
     ParsedU32 p;
@@ -115,12 +116,6 @@ u8 plugCron_OnlyErrors(char * args){
     return 0;
 }
 
-#define tempsLen 8
-u8 temps[tempsLen];
-u8 tempsIdx = 0;
-u8 heatIdx = 0;
-u8 heatStopIdx = 0;
-
 u8 waitCronBusy(){
     u8 to = 255;
     while(isDS3231Busy() && to){
@@ -146,47 +141,11 @@ u8 getCelForCron(){
     return cel;
 }
 
-void runPlugCron(u8 tmrId){
+void tmrPlugCron(u8 tmrId){
     u16 minOfDay = getDS3231MinOfDay();
-    u8 cel = getCelForCron();
-//    if(cel > 50 || cel == 0){
-//        cel = getCelForCron();
-//    }
-    printf("\n0x%x m, %dc\n", minOfDay, cel);
-
-    if(cel > 50 ||  cel == 0){
-        if(!allOff){
-            heatIdx = tempsIdx;
-            heatStopIdx = ((tempsLen >> 2) + tempsIdx - 1)%tempsLen;
-            setPlug('a', PlugOff);
-            eeprom_write(EEPROM_ALLOFF, 1);
-        }
-        if(allOff < 255){
-            allOff++;
-        }
-    }else if(allOff == 1){
-        //if on the second measurement we don't fail then reset it
-        allOff = 0;
-    }
-
-    if(allOff >= 2){
-        printf("heat! 0x%x, idx:0x%x\n", allOff, heatIdx);
-        if(tempsIdx != heatStopIdx){
-            temps[tempsIdx] = cel;
-            tempsIdx++;
-            tempsIdx %= tempsLen;
-        }
-        //else{
-            for(u8 i = 0; i < tempsLen; i++){
-                printf("0x%x, ", temps[i]);
-            }
-            putch('\n');
-        //}
-
-    }else{
-        temps[tempsIdx] = cel;
-        tempsIdx++;
-        tempsIdx %= tempsLen;
+    u8 tempCheck = 1;//!plugCronTempCheck();
+    if(tempCheck){
+        printf("\n0x%x m\n", minOfDay);
         if(minOfDay < lastMinOfDay){
             //day transition
             timeFlag = 0;
@@ -207,7 +166,60 @@ void runPlugCron(u8 tmrId){
         }
     }
     lastMinOfDay = minOfDay;
-    swTimerRegister(Update_Invl_Sec, &runPlugCron);
+    swTimerRegister(Update_Invl_Sec, &tmrPlugCron);
+}
+
+#define tempsLen 8
+#define HIGH_TEMP 50
+#define LOW_TEMP 0
+u8 tempState = 0;
+u8 temps[tempsLen];
+u8 tempsIdx = 0;
+u8 heatIdx = 0;
+u8 heatStopIdx = tempsLen + 1;
+u8 plugCronTempCheck(){
+    u8 failed = 0;
+    u8 cel = getCelForCron();
+    u8 isHarmfulTemp = (cel > HIGH_TEMP || cel == LOW_TEMP)?1:0;
+    switch(tempState){
+        case 0: //normal
+            if(isHarmfulTemp){
+                tempState = 1;
+                heatIdx = tempsIdx;
+                heatStopIdx = ((tempsLen >> 2) + tempsIdx - 1)%tempsLen;
+                setPlug('a', PlugOff);
+                eeprom_write(EEPROM_ALLOFF, 1);
+            }else{
+                temps[tempsIdx] = cel;
+            }
+            break;
+        case 1:
+            if(isHarmfulTemp){
+                tempState = 2;
+            }else{
+                tempState = 0; //back to normal
+                break;
+            }
+        default:
+            failed = 1;
+            if(isHarmfulTemp && tempState < 255){
+                tempState++;
+            }
+
+            printf("heat! 0x%x, idx:0x%x\n", allOff, heatIdx);
+            for(u8 i = 0; i < tempsLen; i++){
+                printf("0x%x, ", temps[i]);
+            }
+            putch('\n');
+            break;
+    }
+    if(tempsIdx != heatStopIdx){
+        temps[tempsIdx] = cel;
+        tempsIdx++;
+        tempsIdx %= tempsLen;
+    }
+
+    return failed;
 }
 
 void printPlugCron(){

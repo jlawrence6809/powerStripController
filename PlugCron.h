@@ -13,8 +13,7 @@ extern "C" {
 #endif
 
 void setupPlugCron(void);
-void plugCron(char*);
-void printPlugCron(void);
+void plugCronServer(char*);
 
 
 #ifdef	__cplusplus

@@ -28,7 +28,7 @@ void printSystemCounter(char*);
 void printNumberOfRestarts(char*);
 
 void serverSetup(){
-    async_Eusart_1_Setup(0x06, 0x82); //9600 baud
+    async_Eusart_1_Setup(0x03, 0x40); //19.2k baud
     ByteBuffer_Construct(&txBuffer1);
 //    ByteBuffer_Construct(&rxBuffer1);
     __delay_ms(1);
@@ -47,8 +47,11 @@ void serverRun(){
     }
     if(rxStrCnt > 0){
         if(rxStr[rxStrCnt-1] == '\n'){
-            rxStr[rxStrCnt] = 0;
+            if(rxStr[rxStrCnt-2] == '\r'){
+                rxStr[rxStrCnt-2] = '\n';
+            }
             findAndRun(rxStr);
+            rxStrCnt = 0;
         }else if(rxStrCnt >= ByteBufferSize){
             printf("Rx Overflow!\n");
             rxStrCnt = 0;
@@ -57,19 +60,16 @@ void serverRun(){
 }
 #define cmdLen 9
 void findAndRun(char* cmd){
-    const char * const cmds[cmdLen] =  {"setplug",      "printplug", "hhr",             "reset",       "syscnt",            "numrst",               "errs",        "rwrtc",       "pcron"};
-    void * const cmdsF[cmdLen] = {&setPlugServer, &printPlugs, &clearHasHadReset, &resetCommand, &printSystemCounter, &printNumberOfRestarts, &reportErrors, &rwRTC_DS3231, &plugCron};
-
-//    char blah = 'h';
-
-//    char blah[] = {1,2};
+    const char * cmds[cmdLen] =  {"setplug\0",    "printplug\0", "hhr\0",           "reset\0",     "syscnt\0",          "numrst\0",             "errs\0",      "rwrtc\0",     "pcron\0"};
+    /*const doesn't work*/void * cmdsF[cmdLen] = {&setPlugServer, &printPlugs,   &clearHasHadReset, &resetCommand, &printSystemCounter, &printNumberOfRestarts, &reportErrors, &rwRTC_DS3231, &plugCronServer};
 
     bool passed;
     for(u8 i = 0; i < cmdLen; i++){
         passed = true;
         char* tmpCmd = cmd;
         const char* cur = cmds[i];
-        while(*cur != 0){
+        __delay_ms(10);
+        while(*cur != '\0'){
             if(*cur != *tmpCmd){
                 passed = false;
                 break;
@@ -84,8 +84,10 @@ void findAndRun(char* cmd){
             while(*tmpCmd == ' '){
                 tmpCmd++;
             }
+            __delay_ms(10);
             void (*runThis)() = cmdsF[i];
             runThis(tmpCmd);
+            __delay_ms(10);
             break;
         }
     }
@@ -96,7 +98,6 @@ void findAndRun(char* cmd){
         }
     }
     putch('#');
-    rxStrCnt = 0;
 }
 
 void clearHasHadReset(char * args){
@@ -140,6 +141,17 @@ void putch(char in){
 void async_Eusart_1_Setup(u8 baudH, u8 baudL){
     EUSART1_Baud_High_Byte_En = 1;
     EUSART1_16bit_Baud_En     = 1;
+
+    /*
+    SYNC = 0, BRGH = 1, BRG16 = 1 or SYNC = 1, BRG16 = 1
+    FOSC = 64.000 MHz
+    Baud	SPBRGHx:SPBRGx
+    300		0xD0:0x54
+    9600	0x06:0x82
+    19.2k	0x03:0x40
+    57.6k       0x01:0x15
+    115.2k	0x00:0x8A
+    */
 
     EUSART1_Baud_High_Byte = baudH;//0x06;
     EUSART1_Baud_Low_Byte   = baudL;//0x82;
