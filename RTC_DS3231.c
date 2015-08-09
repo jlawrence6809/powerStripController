@@ -128,11 +128,12 @@ u8 getHour(){
     u8 hrReg = readDS3231(2);
     u8 hours = 0b00001111 & hrReg;
     hours += (1 & (hrReg >> 4))*10;
-    u8 using24hrClk = !(hrReg>>6);
+    u8 using24hrClk = !((hrReg>>6) & 1);
     if(using24hrClk){
         hours += (1 & (hrReg >> 5))*20;
     }else{
         //convert to 24hr time
+        putch('z');
         if(hours == 12){
             hours = 0;
         }
