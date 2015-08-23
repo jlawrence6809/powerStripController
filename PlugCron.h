@@ -14,6 +14,8 @@ extern "C" {
 
 void setupPlugCron(void);
 void plugCronServer(char*);
+void tmrPlugCron(u8);
+u8 setPlugCron(u8, u8, u16);
 
 
 #ifdef	__cplusplus

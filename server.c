@@ -135,7 +135,7 @@ void printNumberOfRestarts(char* args){
 
 void putch(char in){
     while(!ByteBuffer_Write(&txBuffer1, in)); //blocking
-    EUSART1_Tx_Interrupt_Enable = 1; //enable interrupt
+    EUSART1_Tx_Int_En = 1; //enable interrupt
 }
 
 void async_Eusart_1_Setup(u8 baudH, u8 baudL){

@@ -20,10 +20,8 @@ extern "C" {
 #define EUSART1_Rx_Port                     PORTCbits.RC7
 #define EUSART1_Tx_Interrupt_Flag           PIR1bits.TX1IF
 #define EUSART1_Tx_Register                 TXREG1
-#define EUSART1_Tx_Interrupt_Enable         PIE1bits.TX1IE
 #define EUSART1_Rx_Register                 RCREG1
 #define EUSART1_Rx_Interrupt_Flag           PIR1bits.RC1IF
-#define EUSART1_Rx_Interrupt_Enable         PIE1bits.TX1IE
 #define EUSART1_Rx_Overrun_Error            RCSTA1bits.OERR
 #define EUSART1_Rx_Overrun_Clear            RCSTA1bits.CREN
 #define EUSART1_Rx_Frame_Error              RCSTAbits.FERR

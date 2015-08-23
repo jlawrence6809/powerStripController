@@ -35,6 +35,7 @@ void main(void){
         SystemCounter++;
         swTimerRun();
         serverRun();
+//        tmrPlugCron(0);
     }
 }
 

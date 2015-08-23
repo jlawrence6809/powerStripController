@@ -14,14 +14,14 @@ void interrupt high_priority isrh(void){
         if(txBuffer1.Count > 0){
             EUSART1_Tx_Register = ByteBuffer_Read(&txBuffer1);
         }else{
-            EUSART1_Tx_Interrupt_Enable = 0; //disable interrupt
+            EUSART1_Tx_Int_En = 0; //disable interrupt
         }
     }
     //rx eusart
     if(EUSART1_Rx_Interrupt_Flag){
         char in = EUSART1_Rx_Register;
         ByteBuffer_Write(&txBuffer1, in);
-        EUSART1_Rx_Interrupt_Enable = 1; //enable interrupt
+        EUSART1_Tx_Int_En = 1; //enable interrupt
         rxStr[rxStrCnt] = in;
         rxStrCnt++;
         EUSART1_Rx_Interrupt_Flag = 0;
